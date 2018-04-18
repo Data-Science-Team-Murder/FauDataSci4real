@@ -1,6 +1,6 @@
 ---
 title: "Murder Data"
-author: "Sonia Baron, Elise Gonzalez, Zim Oulette"
+author: "Sonia Baron, Elise Gonzalez, Zim Ouilette"
 date: "March 26, 2018"
 output:
   html_document: default
@@ -21,6 +21,8 @@ install.packages("mapdata")
 install.packages("ggmaps")
 ## loading libraries
 ```{r setup, include=FALSE}
+#Loading our libraries for running later executions.
+
 knitr::opts_chunk$set(echo = TRUE)
 library("knitr")  # for kable and knitting results into a report
 library("broom") 
@@ -40,6 +42,7 @@ library("mapdata")
 
 ## Load data sets
 ```{r FiveThirtyEight data}
+#In this chunk we load the initial dataset and clean it. It took us a few minutes to figure out, but the data set is fairly basic.
 
 # Data sets from FiveThirtyEight
 murder15A <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2015_final.csv")
@@ -67,7 +70,7 @@ murder16 <- murder16 %>%
 
 ```{r, FBI Data}
 
-  # loading cleaned data for FBI crime reports
+#Loads the cleaned FBI data we retrieved off the FBI website. Source at bottom of this doc.
 
 FBI2000 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2000.csv")
 FBI2005 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2005.csv")
@@ -79,6 +82,8 @@ FBI2016 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/
 # Understanding the FiveThirtyEight Data
   We run a multiple linear regression matrix to get a better sense of the data 
 ```{r EDA with ggpairs}
+#An analysis using ggpairs. The amount of data in here is staggering, just look at it all!
+
 data(murder15)
 
 ggpairs (murder15,
@@ -149,6 +154,8 @@ cleanFBIdec
 we could not find the data by city across years, so we plot the states of each of the cities
 ```{r plotting increasing with data frame in R}
 
+#Creating dataframe for ggplot graph. We also set up some numbers to use during the graphing.
+
 Statesinc <- c("Pennsylvania", "Pennsylvania", "Pennsylvania", "Pennsylvania", "Pennsylvania", "North Carolina", "North Carolina", "North Carolina", "North Carolina", "North Carolina", "Missouri", "Missouri", "Missouri", "Missouri", "Missouri", "Maryland","Maryland","Maryland","Maryland","Maryland", "Louisiana","Louisiana","Louisiana","Louisiana","Loisiana")
 
 year<-c('2000','2005','2010','2015','2016','2000','2005','2010','2015','2016','2000',' 2005', '2010','2015', '2016','2000','2005','2010','2015','2016','2000','2005','2010','2015','2016')
@@ -175,6 +182,8 @@ ggplot(FBI2000Graph) +
 
 ```{r plotting  decreasing states with data frame in R}
 
+#Creating dataframe for ggplot graph. We also set up some numbers to use during the graphing.
+
 Statesdec<-c("Georgia", "Georgia", "Georgia", "Georgia", "Georgia", "Kansas", "Kansas", "Kansas", "Kansas", "Kansas", "New Jersey", "New Jersey", "New Jersey", "New Jersey", "New Jersey", "New York","New York","New York","New York","New York", "Texas","Texas","Texas","Texas","Texas")
 year<-c('2000','2005','2010','2015','2016','2000','2005','2010','2015','2016','2000',' 2005', '2010','2015', '2016','2000','2005','2010','2015','2016','2000','2005','2010','2015','2016')
 murder<-c(651,516,527,565,646,169,95,100,125,96,289,417,363,353,372,952,868,860,611,628,1238,1406,1246,1276,1459)
@@ -188,6 +197,7 @@ ggplot(FBIdec) +
 ```
 
 ```{r plotting decreasing states with data frame from the CSV file}
+#This graphs the states based on cities which had the largest decreases.
 
 FBI2000Graph2 <- read_csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2000Graph2.csv")
 
@@ -198,7 +208,6 @@ ggplot(FBI2000Graph2) +
 
 ```
 
-We could like t
 ```{r plotting state and cities}
 
 #head(FBI2000Graph2)
@@ -211,7 +220,7 @@ ggplot(murder15) +
 ```
 
 ```{r truncating and plotting five-thirty-eight data}
-
+#This graphs data from the cities in question based on data from the fivethirtyeight dataset.
 
 #(murder15graph<-murder15[c(31,51,67,54,45,39,71,36,40,56),])
 
@@ -235,8 +244,14 @@ ggplot(xymelt, aes(x = a, y = value)) +
 #  labs(x = "Year", y = "Number of Murders", title = "Cities With Largest Change in Murder Mid 2017", caption = "Source: fivethirtyeight.com")
 ```
 
-## Additional Changes 
-function that chooses highest five, rather than relying on the article.
+## Analysis
+
+## Conclusion
+Over the course of this project we came accross many, many challenges, but we overcame in the end. To begin we had to figure out the proper method of importing our datasets and cleaning the data. By reviewing our notes and homework we were able to integrate the data correctly into our document. Finding corroborating data to elaborate on our initial set was one of the largest early challenges. Through careful searching we eventually uncovered the crime reports over decades from the FBI website. Utilizing drop box was a complicating matter for our group. Eventually we decided to only work on the r markdown file on one computer at a time. Oh, also back slashes were a problem. Ggplot gave us some trouble but thanks to the help we received we triumphed in the end! It took us ours of effort to produce an acceptable quality graph, but unfortunately after all that work our dates were disrupted due to unknown errors. We corrected this by using external programs to reorganize our tables for ggplot. It was a kludge, but it got the results we need. Overall we learned a lot about managing data, and delivering results in a timely fashion, all of which might be of great help in the future.
+
+This project really gave our team a chance not only to sharpen our data science skillset, but also enabled us to practice our ability cooperate as a team to overcome unexpected challenges we faced. We learned proper means of work distribution, how to ask for help, and that they had free food in the burrow last night which we ate to celebrate our team's accomplishments. The cake was ok.
+
+In conclusion, the essential value of R data science analysis is its capibilities of allowing the examination of diverse values and variables, as well as its capacity to facilitate constructive group exercise. Because of these virtues, R analyses such as this will have continued value as the field of data science develops.
 
 
 ## Sources 
