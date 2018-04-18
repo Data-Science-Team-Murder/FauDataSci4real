@@ -1,0 +1,254 @@
+---
+title: "Murder Data"
+author: "Sonia Baron, Elise Gonzalez, Zim Oulette"
+date: "March 26, 2018"
+output:
+  html_document: default
+  word_document: default
+--- 
+#Introduction. 
+
+The current project is an analysis of five selected cities across the years. These cities were selected based on a follow-up article of our original FiveThirtyEight data. Published in july 2017, this article provided the cities with the highest and the lowest changes from 2016 to mid-year 2017. We wondered whether these cities presented a sudder change, or if they were slowly changing into such results. 
+
+In a follow up article, the murder rates from 2017 across the US are compared to the murder rates from the 1990s. The article explains that while the murder rates have seen an overall increase over the past few years (since 2014), they are not nearly as high as in the 1990s. Another interesting point that was made is that there is evidence that shows that when a city's murder rate increases, the national average of murder rates seems to counteract or account for this by showing a decrease. 
+
+Big cities also tend to skew the average murder rates in the US. 
+The second half of the year, murders 
+
+install.packages(c("maps", "mapdata"))
+install.packages("reshape2")
+install.packages("mapdata")
+install.packages("ggmaps")
+## loading libraries
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("knitr")  # for kable and knitting results into a report
+library("broom") 
+library("tidyverse")
+library("modelr")
+library("UsingR")
+library("GGally") 
+library("dplyr")
+library("plyr")
+library("reshape2")
+library("maps")
+library("mapdata")
+
+
+```
+
+
+## Load data sets
+```{r FiveThirtyEight data}
+
+# Data sets from FiveThirtyEight
+murder15A <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2015_final.csv")
+murder16A <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/murder_2016/murder_2016_prelim.csv")
+
+#A items are the uncleaned versions, murder15 and murder16, etc. are cleaned.
+murder15 <- subset(murder15A, select = -c(change))
+head(murder15)
+murder16 <- subset(murder16A, select = -c(source,as_of,change))
+head(murder16)
+
+
+# Last dates data for 2016 was collected
+muder16Dates <- subset(murder16A, select = -c(source,change)) 
+
+# need to organize these two by state
+?arrange
+murder15 <- murder15 %>%
+    arrange(murder15$state)
+
+murder16 <- murder16 %>%
+   arrange(murder16$state)
+
+```
+
+```{r, FBI Data}
+
+  # loading cleaned data for FBI crime reports
+
+FBI2000 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2000.csv")
+FBI2005 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2005.csv")
+FBI2010 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2010.csv")
+FBI2015 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2015.csv")
+FBI2016 <- read.csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2016.csv")
+```
+
+# Understanding the FiveThirtyEight Data
+  We run a multiple linear regression matrix to get a better sense of the data 
+```{r EDA with ggpairs}
+data(murder15)
+
+ggpairs (murder15,
+        lower = list(
+            continuous = "smooth"),
+        axisLabels ="none",
+        switch = 'both',
+        cardinality_threshold = 100)
+
+data(murder16)
+#str(murder15)
+
+ggpairs (murder16,
+        lower = list(
+            continuous = "smooth"),
+        axisLabels ="none",
+        switch = 'both',
+        cardinality_threshold = 100)
+```
+
+```{r heat map}
+
+
+
+```
+
+```{r state values, echo = FALSE} 
+FBI2016$STATE
+FBI2015$STATE
+FBI2010$STATE
+FBI2005$STATE
+FBI2000$STATE
+
+#We used this to display the list of states (rowss) and then We went through and wrote down the row numbers of the states that we are going to work with. The row numbers vary between the data sets we are using which is why it is important that we select the correct row numbers for each data set. 
+
+```
+
+```{r exclusion}
+
+#we are only using certain states and we are removing the repeating "State" columb from each dataframe. 
+
+FBI2000inc<-FBI2000[c(19,21,26,34,39),]
+FBI2000dec<-FBI2000[c(11,17,31,33,45),]
+FBI2005inc<-FBI2005[c(17,19,24,32,37),-1]
+FBI2005dec<-FBI2005[c( 9,15,29,31,42),-1]
+FBI2010inc<-FBI2010[c(18,20,25,33,38),-1]
+FBI2010dec<-FBI2010[c(10,16,30,32,43),-1]
+FBI2015inc<-FBI2015[c(18,20,25,33,38),-1]
+FBI2015dec<-FBI2015[c(10,16,30,32,43),-1]
+FBI2016inc<-FBI2016[c(18,20,25,33,38),-1]
+FBI2016dec<-FBI2016[c(10,16,30,32,43),-1]
+
+```
+
+```{r bind data frames}
+#here, we are combining the data frames from above to create two dataframes to show just the states that showed an increase in murder in 2017 and those that showed a decrease in murder, respectively.
+
+
+cleanFBIinc<-cbind.data.frame(FBI2000inc,FBI2005inc,FBI2010inc,FBI2015inc,FBI2016inc)
+cleanFBIdec<-cbind.data.frame(FBI2000dec,FBI2005dec,FBI2010dec,FBI2015dec,FBI2016dec)
+
+cleanFBIinc
+cleanFBIdec
+```
+
+
+
+we could not find the data by city across years, so we plot the states of each of the cities
+```{r plotting increasing with data frame in R}
+
+Statesinc <- c("Pennsylvania", "Pennsylvania", "Pennsylvania", "Pennsylvania", "Pennsylvania", "North Carolina", "North Carolina", "North Carolina", "North Carolina", "North Carolina", "Missouri", "Missouri", "Missouri", "Missouri", "Missouri", "Maryland","Maryland","Maryland","Maryland","Maryland", "Louisiana","Louisiana","Louisiana","Louisiana","Loisiana")
+
+year<-c('2000','2005','2010','2015','2016','2000','2005','2010','2015','2016','2000',' 2005', '2010','2015', '2016','2000','2005','2010','2015','2016','2000','2005','2010','2015','2016')
+murder<-c(602, 734, 646,651, 655, 560,566,445,506,595,347,401,419,499,535,430,551,424,372,430,560,399,437,474,543)
+
+(FBIinc <- data.frame(Statesinc, year, murder))
+
+ggplot(FBIinc) +
+  geom_line(aes(x = year, y = murder, group= Statesinc, color = Statesinc), size = 1.5) + 
+  labs(x = "Year", y = "Number of Murders", title = "States Whose Cities Had the Largest Increase in Murder in Mid 2017", caption = "Source: https://ucr.fbi.gov/crime-in-the-u.s/")
+
+```
+
+```{r plotting increasing with the csv file}
+
+FBI2000Graph <- read_csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2000Graph.csv")
+head(FBI2000Graph)
+
+ggplot(FBI2000Graph) +
+  geom_line(aes(x = YEAR, y = MURDERS, group= STATE, color = STATE), size = 1.5) + 
+  labs(x = "Year", y = "Number of Murders", title = "States Whose Cities Had the Largest Increase in Murder in Mid 2017", caption = "Source: https://ucr.fbi.gov/crime-in-the-u.s/")
+
+```
+
+```{r plotting  decreasing states with data frame in R}
+
+Statesdec<-c("Georgia", "Georgia", "Georgia", "Georgia", "Georgia", "Kansas", "Kansas", "Kansas", "Kansas", "Kansas", "New Jersey", "New Jersey", "New Jersey", "New Jersey", "New Jersey", "New York","New York","New York","New York","New York", "Texas","Texas","Texas","Texas","Texas")
+year<-c('2000','2005','2010','2015','2016','2000','2005','2010','2015','2016','2000',' 2005', '2010','2015', '2016','2000','2005','2010','2015','2016','2000','2005','2010','2015','2016')
+murder<-c(651,516,527,565,646,169,95,100,125,96,289,417,363,353,372,952,868,860,611,628,1238,1406,1246,1276,1459)
+(FBIdec<-data.frame(Statesdec,year,murder))
+
+ggplot(FBIdec) + 
+  geom_line(aes(x = year, y = murder, group = Statesdec, color = Statesdec), size = 1.5) +
+  labs(x = "Year", y = "Number of Murders", title = "States Whose Cities Had the Largest Decrease in Murder in Mid 2017", caption = "Source: https://ucr.fbi.gov/crime-in-the-u.s/" )
+
+
+```
+
+```{r plotting decreasing states with data frame from the CSV file}
+
+FBI2000Graph2 <- read_csv("https://raw.githubusercontent.com/Data-Science-Team-Murder/FauDataSci4real/master/FBI2000Graph2.csv")
+
+head(FBI2000Graph2)
+ggplot(FBI2000Graph2) +
+  geom_line(aes(x = YEAR, y = MURDERS, group= STATE, color = STATE), size = 1.5) + 
+  labs(x = "Year", y = "Number of Murders", title = "States Whose Cities Had the Largest Increase in Murder in Mid 2017", caption = "Source: https://ucr.fbi.gov/crime-in-the-u.s/")
+
+```
+
+We could like t
+```{r plotting state and cities}
+
+#head(FBI2000Graph2)
+head(murder15)
+ggplot(murder15) +
+  geom_line(aes(x = state, y = murder15$x2014_murders, group=  state, color = state), size = 1.5) + 
+  labs(x = "Year", y = "Number of Murders", title = "States Whose Cities Had the Largest Increase in Murder in Mid 2017", caption = "Source: https://ucr.fbi.gov/crime-in-the-u.s/")
+
+
+```
+
+```{r truncating and plotting five-thirty-eight data}
+
+
+#(murder15graph<-murder15[c(31,51,67,54,45,39,71,36,40,56),])
+
+#library(reshape2)
+?melt
+
+#xymelt <- melt(murder15$X2014_murders, murder15$x2015_murders, id.vars = "murder2015$x2014_murders")
+#xymelt
+library(ggplot2)
+ggplot(xymelt, aes(x = a, y = value, color = variable)) +
+  theme_bw() +
+  geom_line()
+
+ggplot(xymelt, aes(x = a, y = value)) +
+  theme_bw() +
+  geom_line() +
+  facet_wrap(~ variable)
+
+#ggplot(murder15graph) +
+#  geom_line(aes(x = city, y = murder, group= city, color = city), size = 1.5) + 
+#  labs(x = "Year", y = "Number of Murders", title = "Cities With Largest Change in Murder Mid 2017", caption = "Source: fivethirtyeight.com")
+```
+
+## Additional Changes 
+function that chooses highest five, rather than relying on the article.
+
+
+## Sources 
+1. https://fivethirtyeight.com/features/a-handful-of-cities-are-driving-2016s-rise-in-murders/
+2. https://fivethirtyeight.com/features/murder-is-up-again-in-2017-but-not-as-much-as-last-year/ 
+3. https://ucr.fbi.gov/crime-in-the-u.s/
+4. Github account; https://github.com/Data-Science-Team-Murder/FauDataSci4real
+
+Special thanks to Reilly and Stefán for their help!!
+
+sessionInfo()
+R version 3.4.3 (2017-11-30)
+Platform: i386-w64-mingw32/i386 (32-bit)
+Running under: Windows >= 8 x64 (build 9200)
+4. 
